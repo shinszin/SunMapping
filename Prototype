@@ -1,0 +1,54 @@
+int[] temperatures; // Array holding temperature data for 24 hours
+PVector center; // Center of the sun icon
+float radius; // Radius of the sun's base
+float maxRayLength = 150; // Maximum length of a ray
+color[] colors; // Array holding colors for each ray
+
+void setup() {
+  size(600, 600);
+  center = new PVector(width/2, height/2);
+  temperatures = new int[24]; // Placeholder for actual temperature data
+  colors = new color[24];
+  // Initialize temperature data and color array
+  for (int i = 0; i < 24; i++) {
+    temperatures[i] = int(random(10, 30)); // Replace with actual data
+    colors[i] = lerpColor(color(0, 0, 255), color(255, 0, 0), map(temperatures[i], 10, 30, 0, 1));
+  }
+}
+
+void draw() {
+  background(255);
+  drawSun();
+  drawClockHand(mouseX, mouseY); // Interactive clock hand
+}
+
+void drawSun() {
+  for (int i = 0; i < 24; i++) {
+    float angle = radians(map(i, 0, 24, 0, 360));
+    float rayLength = map(temperatures[i], 10, 30, 50, maxRayLength);
+    PVector end = PVector.fromAngle(angle).mult(rayLength).add(center);
+    stroke(colors[i]);
+    strokeWeight(3);
+    line(center.x, center.y, end.x, end.y);
+  }
+}
+
+void drawClockHand(float x, float y) {
+  // Calculate and draw the interactive clock hand
+  float angle = atan2(y - center.y, x - center.x);
+  float handLength = maxRayLength + 20;
+  PVector handEnd = PVector.fromAngle(angle).mult(handLength).add(center);
+  stroke(0);
+  strokeWeight(2);
+  line(center.x, center.y, handEnd.x, handEnd.y);
+  // Highlight corresponding ray and show temperature in tooltip
+  int hour = (int)map(degrees(angle) + 360, 0, 360, 0, 24) % 24; // Ensures hour is within [0, 23]
+  displayTooltip(hour);
+}
+
+void displayTooltip(int hour) {
+  // Display temperature data for the highlighted ray
+  fill(0);
+  textSize(14);
+  text("Hour: " + hour + "\nTemp: " + temperatures[hour] + "°C", mouseX, mouseY - 20);
+}
